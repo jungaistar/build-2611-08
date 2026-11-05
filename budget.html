@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구매 절감 실적 자동 집계(예산단가 방식) — 구매가 절감 실적 집계</title>
+<meta name="description" content="발주 실적·협력업체 담당자·예산 단가 엑셀 세 가지를 올리면 ZNB 발주만 골라 담당자와 예산단가를 매칭하고 차이금액·Impact·실적을 계산해 보고용 엑셀로 냅니다. 파일은 브라우저 안에서만 처리합니다.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://build-2611-08.jobability.co.kr/budget.html">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="생성형 AI 업무자동화 전문가과정 · 2차수">
+<meta property="og:url" content="https://build-2611-08.jobability.co.kr/budget.html">
+<meta property="og:title" content="구매 절감 실적 자동 집계(예산단가 방식) — 생성형 AI 업무자동화 전문가과정 2차수">
+<meta property="og:description" content="발주 실적 × 협력업체 담당자 × 예산 단가를 매칭해 차이금액·Impact·실적을 계산하고 보고용 엑셀을 만듭니다.">
+<meta property="og:image" content="https://build-2611-08.jobability.co.kr/og-index.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<nav class="topnav" aria-label="주요 메뉴">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="index.html">구매가 절감 실적 집계 <small>build-2611-08 · 기획 최상원</small></a>
+    <ul class="topnav-links">
+      <li><a href="index.html">연초 단가표 방식</a></li>
+      <li><a href="budget.html" class="active" aria-current="page">예산단가 방식</a></li>
+      <li><a href="#s-bfiles">파일</a></li>
+      <li><a href="#s-bfx">환율</a></li>
+      <li><a href="#s-bresult">결과</a></li>
+      <li><a href="guide.html">사용법</a></li>
+      <li><a href="plan.html">기획서</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">생성형 AI 업무자동화 전문가과정 · 2차수 · 프로젝트 08 · v1.1 상세 기획안 방식</div>
+  <h1>구매 절감 실적 자동 집계 — 발주 실적 × 담당자 × 예산 단가</h1>
+  <p>엑셀 세 가지를 올리면 <b>발주유형 ZNB</b> 만 골라 협력사 코드로 <b>담당자</b>를, 자재품번으로 <b>예산단가·NOTE</b> 를 맞춥니다.
+     품목범주로 구매단가를 정해 <b>차이금액·Impact·실적(인하/인상/동결)</b>을 계산하고,
+     못 맞춘 행은 비고에 사유를 남겨 보고용 엑셀(실적·집계·제외·오류 내역)로 냅니다.</p>
+</div></header>
+
+<main><div class="wrap">
+
+<section id="s-bfiles" class="card">
+  <h2 style="margin-top:0">1. 엑셀 파일 세 가지를 올리세요</h2>
+  <p class="sub">표 세 가지 — <code>발주 실적</code>(구매오더·발주유형·협력사 코드·협력사 이름·자재품번·자재품명·통화·구매단가·발주수량·품목범주·조립비·자재비) ·
+     <code>협력업체 담당자</code>(협력업체 코드·협력업체명·담당자) · <code>예산 단가</code>(자재품번·예산단가·NOTE).
+     파일을 따로 올려도 되고 한 파일에 시트로 넣어도 됩니다. 머리글을 보고 어느 표인지, 어느 열이 어느 항목인지 짝짓고, 못 찾은 열은 아래에서 고릅니다.</p>
+  <label class="drop" id="b-drop">
+    <input type="file" id="b-file" accept=".xlsx,.xls,.csv" multiple>
+    <b>엑셀 파일을 끌어다 놓거나 눌러서 고르세요 (여러 개 가능)</b>
+    <span>파일은 서버로 올라가지 않습니다 · 브라우저 안에서만 계산합니다</span>
+  </label>
+  <div class="btnrow">
+    <button class="btn primary" id="b-sample">예제로 해보기</button>
+    <button class="btn" id="b-dl-orders">발주 실적 예제 내려받기</button>
+    <button class="btn" id="b-dl-vendors">담당자 예제 내려받기</button>
+    <button class="btn" id="b-dl-budget">예산 단가 예제 내려받기</button>
+    <button class="btn" id="b-reset">올린 파일 모두 비우기</button>
+  </div>
+  <p class="sub" style="margin-top:8px">예제 세 파일은 저장소 <code>samples/</code> 폴더에도 있습니다. 예제 데이터는 실제 사내 데이터가 아닙니다.</p>
+  <div id="b-files"></div>
+  <div id="b-status"></div>
+</section>
+
+<section id="s-bfx" class="card">
+  <h2 style="margin-top:0">2. 환율</h2>
+  <p class="sub">기획안의 고정 환율이 기본값입니다(KRW 1 · USD 1,350 · EUR 1,572 · CNY 190 · JYP 9.4). 여기서 고치면 이 브라우저에 저장되고 바로 다시 계산합니다.
+     <b>JYP</b> 는 원본 통화 코드가 JYP 일 때만 적용합니다. JPY 처럼 글자만 비슷한 코드는 바꾸지 않고 「환율 확인 필요」로 둡니다. 표에 없는 통화도 「환율 확인 필요」입니다.</p>
+  <div id="b-fx-table"></div>
+  <div class="btnrow">
+    <button class="btn" id="b-fx-add">통화 추가</button>
+    <button class="btn" id="b-fx-reset">기본값으로 되돌리기</button>
+  </div>
+  <div id="b-fx-msg"></div>
+</section>
+
+<section id="s-bresult" class="card" hidden>
+  <h2 style="margin-top:0">3. 구매 절감 실적</h2>
+  <div id="b-stats"></div>
+  <div id="b-diag"></div>
+  <h3>정합성 검증</h3>
+  <ul id="b-verify" class="verify"></ul>
+  <div id="b-issues"></div>
+  <div class="grid2">
+    <div><h3>담당자별</h3><div id="b-owner"></div></div>
+    <div><h3>협력사별</h3><div id="b-vendor"></div></div>
+  </div>
+
+  <h3>구매오더별 상세</h3>
+  <div class="ctrl">
+    <label>실적 <select id="b-filter-result">
+      <option value="">전체</option><option>인하</option><option>인상</option><option>동결</option><option value="pending">계산 보류(실적 없음)</option>
+    </select></label>
+    <label>비고 <select id="b-filter-note"></select></label>
+    <label>구매오더·협력사·품번·담당자 <input type="search" id="b-q" placeholder="찾을 말"></label>
+    <span class="sub" id="b-count"></span>
+  </div>
+  <p class="sub">구매단가 옆 <span class="src s-file">자재비</span> <span class="src s-file">조립비</span>는 품목범주로 고른 칸입니다.
+     예산단가 옆 <span class="src s-file">예산 파일</span>은 올린 문서의 값, <span class="src s-manual">화면 입력</span>은 여기서 넣은 값,
+     <span class="calc-t">계산</span>은 도구가 계산한 값입니다. 예산단가가 비어 있는 행은 그 자리에서 입력하면 바로 계산하고, 입력값은 이 브라우저에 품번별로 남습니다.</p>
+  <div class="tablewrap" id="b-table"></div>
+  <h3>화면에서 입력한 예산단가</h3>
+  <p class="sub">파일에 없는 품번에만 쓰입니다. 파일에 값이 있으면 파일 값이 우선이고, 다시 올리거나 다시 계산해도 여기 값은 지워지지 않습니다.</p>
+  <ol id="b-manual-list" class="adj"></ol>
+
+  <details class="ai"><summary>제외된 행(발주유형 ZNB 아님)</summary><div class="tablewrap small" id="b-excluded"></div></details>
+  <details class="ai"><summary>오류 내역(담당자 미매칭 · 예산단가 미매칭 · 구매단가 확인 · 환율 확인 · 기타)</summary><div class="tablewrap small" id="b-errors"></div></details>
+
+  <div class="btnrow">
+    <button class="btn green" id="b-export">엑셀 내보내기 (구매절감 실적 · 집계 및 검증 · 제외 · 오류 내역 · 환율)</button>
+  </div>
+  <p class="sub" style="margin-top:8px">「구매절감 실적」 시트는 열 19개를 기획안 순서 그대로 두고, 구매오더 단위를 합치거나 빼지 않습니다.
+     예산단가가 빈 칸에 값을 넣으면 차이금액·Impact·실적이 수식으로 바로 계산됩니다. 담당자 미매칭 행은 이 시트에 없고 오류 내역 시트에 있습니다.</p>
+</section>
+
+<section id="s-brules" class="card">
+  <h2 style="margin-top:0">4. 계산 기준</h2>
+  <ul class="rules">
+    <li><b>분석 대상</b> — 발주유형이 ZNB 인 행만. 나머지는 「제외」 시트에 둡니다.</li>
+    <li><b>담당자</b> — 협력사 코드가 협력업체 담당자 표의 코드와 정확히 같을 때. 앞뒤 공백·숫자/글자 형식만 맞추고 <b>선행 0 은 지우지 않습니다</b>(001001 과 1001 은 다른 코드). 못 맞추면 「미매칭」으로 표시하고 최종 실적에서 뺍니다.</li>
+    <li><b>예산단가·Lever</b> — 자재품번이 정확히 같을 때. 공백만 맞추고 하이픈·글자는 손대지 않습니다. 못 맞추면 행은 남기고 예산단가·차이금액·Impact·실적을 비운 뒤 비고에 「예산단가 미매칭 - 수작업 입력 필요」. Lever 는 예산 단가 표의 NOTE 를 해석 없이 그대로 씁니다.</li>
+    <li><b>구매단가</b> — 품목범주 0 이면 자재비, 3 이면 조립비. 발주 실적의 구매단가 열과 달라도 이 기준이 우선입니다. 그 밖의 범주이거나 값이 비었으면 계산을 보류하고 「구매단가 확인 필요」.</li>
+    <li><b>차이금액 = 구매단가 − 예산단가</b> — 양수 인하 · 음수 인상 · 0 동결. 기획안의 정의를 그대로 따릅니다(실적 구분은 차이금액 부호로 하고 Impact 부호로 하지 않습니다).</li>
+    <li><b>Impact = 차이금액 × 발주수량 × 환율</b> — 원화 기준 정수 반올림. 구매단가·예산단가·발주수량·환율 중 하나라도 없으면 Impact 를 내지 않습니다.</li>
+    <li><b>비고</b> — 담당자 미매칭 · 예산단가 미매칭 - 수작업 입력 필요 · 구매단가 확인 필요 · 환율 확인 필요 · 기타 데이터 오류 중에서만 적고, 정상 행은 비워 둡니다. 원본 값은 고치지 않습니다.</li>
+  </ul>
+</section>
+
+</div></main>
+
+<footer><div class="wrap">
+  생성형 AI 업무자동화 전문가과정 2차수 · 프로젝트 08 · 기획 최상원 ·
+  예제 데이터는 실제 사내 데이터가 아닙니다.
+</div></footer>
+
+<script src="lib/xlsx.full.min.js"></script>
+<script src="js/budget.js"></script>
+<script src="js/budget-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사용법 — 구매가 절감 실적 집계</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<nav class="topnav" aria-label="주요 메뉴">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="index.html">구매가 절감 실적 집계 <small>build-2611-08 · 기획 최상원</small></a>
+    <ul class="topnav-links">
+      <li><a href="index.html">연초 단가표 방식</a></li>
+      <li><a href="budget.html">예산단가 방식</a></li>
+      <li><a href="guide.html" class="active" aria-current="page">사용법</a></li>
+      <li><a href="plan.html">기획서</a></li>
+    </ul>
+  </div>
+</nav>
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">사용법</div>
+  <h1>발주 실적과 단가표만 올리면 절감 실적이 나옵니다</h1>
+  <p>계산은 전부 이 브라우저 안에서 끝나고 파일은 어디로도 올라가지 않습니다.</p>
+</div></header>
+<main><div class="wrap">
+<div class="card">
+  <h2 style="margin-top:0">1. 표 세 가지</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>표</th><th>열</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>발주실적</td><td>품번 · 품명 · 공급업체 · 발주수량 · 발주단가 · 발주월</td><td>매월 내려받는 발주 실적입니다. 월별 파일을 여러 개 올려도 됩니다.</td></tr>
+      <tr><td>확정단가</td><td>품번 · 확정단가</td><td>연초(또는 전년) 확정 단가입니다. 여기 있는 품번이 기존 품번입니다.</td></tr>
+      <tr><td>품의서</td><td>품번 · 기준단가 · 변경후단가 · 사유 Lever · 품의번호 · 비고</td><td>신규 품번의 기준 단가와, 단가가 바뀐 품번의 사유입니다. 없으면 화면에서 입력해도 됩니다.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub" style="margin-top:10px">시트 이름은 상관없습니다. 머리글을 보고 어느 표인지 알아봅니다.
+  열 이름이 조금 달라도 읽습니다(자재코드·업체·수량·단가·발주일 등).</p>
+</div>
+<div class="card">
+  <h2 style="margin-top:0">2. 계산 방식</h2>
+  <p>기존 품번은 (연초 확정 단가 − 실 발주 단가) × 발주 수량입니다.
+  신규 품번은 (품의서 기준 단가 − 실 발주 단가) × 발주 수량입니다.
+  값이 양수면 절감, 음수면 인상입니다.</p>
+  <p>절감률은 순절감을 기준 금액(기준 단가 × 발주 수량의 합)으로 나눈 값입니다.
+  사유 Lever 는 품의서 정보에서 가져옵니다. 원자재 연동 · 가공비 현실화 · VA/VE · BCC · 국산화 · 기타 로 나누고,
+  표기가 조금 달라도(VAVE, 원자재, 임가공비) 맞춰 읽습니다.</p>
+</div>
+<div class="card">
+  <h2 style="margin-top:0">3. 확인 필요 목록</h2>
+  <p>기준 단가를 찾지 못한 신규 품번은 0 으로 세지 않고 실적에서 뺀 뒤 「확인 필요」에 모읍니다.
+  품의서 변경후단가와 실제 발주단가가 다른 줄, 단가가 바뀌었는데 사유가 없는 줄도 함께 보여 줍니다.</p>
+  <p>품번 표기만 다른 품의서(BK-1061 과 BK1061)가 있으면 「비슷한 품번」으로 제안합니다. 누르면 그 품의 정보로 연결합니다.
+  화면에서 입력한 품의 정보는 엑셀 보고서의 「품의서정보」 시트에 함께 들어가니, 다음 달에 그 시트를 그대로 다시 올리면 됩니다.</p>
+</div>
+<div class="card" id="g-budget">
+  <h2 style="margin-top:0">5. 예산단가 방식(v1.1) — 발주 실적 × 담당자 × 예산 단가</h2>
+  <p>기획자가 다시 올린 상세 기획안을 그대로 옮긴 흐름입니다. <a href="budget.html">예산단가 방식</a> 화면에서 엑셀 세 가지를 올립니다.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>표</th><th>열</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>발주 실적</td><td>구매오더 · 발주유형 · 협력사 코드 · 협력사 이름 · 자재품번 · 자재품명 · 통화 · 구매단가 · 발주수량 · 품목범주 · 조립비 · 자재비</td><td>발주유형이 ZNB 인 행만 분석합니다. 나머지는 「제외」 시트로 갑니다.</td></tr>
+      <tr><td>협력업체 담당자</td><td>협력업체 코드 · 협력업체명 · 담당자</td><td>협력사 코드로 담당자를 맞춥니다. 못 맞춘 행은 실적에서 빠지고 「오류 내역」에 남습니다.</td></tr>
+      <tr><td>예산 단가</td><td>자재품번 · 예산단가 · NOTE</td><td>자재품번으로 예산단가와 NOTE(Lever)를 맞춥니다. 못 맞춘 행은 실적 시트에 남기고 예산단가를 비워 둡니다.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub" style="margin-top:10px">열 이름이 달라도 같은 뜻 낱말이면 짝짓고, 못 찾은 열은 시트 아래 표에서 고릅니다. 올린 파일마다 시트 구성·열·건수와 첫 세 줄을 미리 보여 줍니다.</p>
+  <h3>계산</h3>
+  <p>구매단가는 품목범주 0 이면 자재비, 3 이면 조립비입니다. 그 밖의 범주이거나 값이 없으면 「구매단가 확인 필요」로 보류합니다.
+  차이금액은 구매단가 − 예산단가이고 양수면 인하, 음수면 인상, 0 이면 동결입니다(기획안 정의 그대로).
+  Impact 는 차이금액 × 발주수량 × 환율을 원화 정수로 반올림한 값이고, 환율은 KRW 1 · USD 1,350 · EUR 1,572 · CNY 190 · JYP 9.4 가 기본값입니다(화면에서 고칠 수 있습니다).
+  JPY 처럼 글자만 비슷한 코드는 바꾸지 않고 「환율 확인 필요」로 둡니다.</p>
+  <h3>예산단가 직접 입력</h3>
+  <p>예산단가가 빈 행은 상세표의 그 자리에서 값을 넣고 「반영」을 누르면 바로 계산합니다. 입력값은 이 브라우저에 품번별로 남아 다음에 다시 올려도 쓰이고, 파일에 값이 있는 품번은 파일 값이 우선입니다.
+  내려받은 엑셀에서도 예산단가 칸에 값을 넣으면 차이금액·Impact·실적이 수식으로 저절로 계산됩니다.</p>
+  <h3>엑셀 구성</h3>
+  <p>「구매절감 실적」(열 19개, 기획안 순서 고정, 구매오더 단위 유지, 담당자 미매칭 제외 · 예산단가 미매칭 포함, 필터) · 「집계 및 검증」(건수 · 인하/인상/동결 · Impact 합 · 정합성 · 담당자별 · 협력사별) ·
+  「제외(비ZNB)」 · 「오류 내역」 · 「환율」(Impact 수식이 찾는 표) · 「안내」.</p>
+</div>
+<div class="card">
+  <h2 style="margin-top:0">6. 이번 판에서 하지 않는 것</h2>
+  <ul style="margin-left:20px">
+    <li>신규 품번의 품의서 자동 검색 — 품의서 정보는 표로 올리거나 화면에서 입력합니다.</li>
+    <li>사내 구매 시스템 자동 연동 — 내려받은 엑셀을 올리는 방식입니다.</li>
+    <li>(v1.1) 엑셀의 첫 행 고정과 수작업 입력 칸 색 구분 — 동봉한 무료 엑셀 라이브러리가 셀 서식을 쓰지 못합니다. 열어서 「보기 → 틀 고정」을 누르고, 비고 열로 거르면 입력할 행이 모입니다.</li>
+    <li>(v1.1) 예산단가 수작업 입력 뒤 집계 시트의 자동 갱신 — 상세는 수식으로 바로 계산되지만 집계 숫자는 만든 시점의 값입니다. 도구에서 입력하고 다시 내보내면 맞습니다.</li>
+  </ul>
+</div>
+</div></main>
+<footer><div class="wrap">생성형 AI 업무자동화 전문가과정 2차수 · 프로젝트 08 · 기획 최상원</div></footer>
+</body>
+</html>

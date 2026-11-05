@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구매가 절감 실적 집계 — 품번별 절감액·사유 Lever 자동 분류</title>
+<meta name="description" content="월별 발주 실적과 연초 확정 단가표를 올리면 품번별 구매가 절감액을 계산하고, 신규 품번은 품의서 정보로 매칭해 사유 Lever·업체·월별로 집계합니다. 파일은 브라우저 안에서만 처리합니다.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://build-2611-08.jobability.co.kr/">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="생성형 AI 업무자동화 전문가과정 · 2차수">
+<meta property="og:url" content="https://build-2611-08.jobability.co.kr/">
+<meta property="og:title" content="구매가 절감 실적 집계 — 생성형 AI 업무자동화 전문가과정 2차수">
+<meta property="og:description" content="발주 실적과 확정 단가표를 올리면 절감액·Lever별 실적·확인 필요 신규 품번을 한 번에 보여 줍니다.">
+<meta property="og:image" content="https://build-2611-08.jobability.co.kr/og-index.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<nav class="topnav" aria-label="주요 메뉴">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="index.html">구매가 절감 실적 집계 <small>build-2611-08 · 기획 최상원</small></a>
+    <ul class="topnav-links">
+      <li><a href="#s-data">데이터</a></li>
+      <li><a href="#s-sum">집계</a></li>
+      <li><a href="#s-check">확인 필요</a></li>
+      <li><a href="#s-detail">상세·내보내기</a></li>
+      <li><a href="budget.html">예산단가 방식</a></li>
+      <li><a href="guide.html">사용법</a></li>
+      <li><a href="plan.html">기획서</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">생성형 AI 업무자동화 전문가과정 · 2차수 · 프로젝트 08</div>
+  <h1>구매가 절감 실적 집계</h1>
+  <p>월별 발주 실적과 연초 확정 단가표를 올리면 <b>품번별 절감액</b>을 바로 계산합니다.
+     확정 단가가 없는 <b>신규 품번</b>은 품의서 정보로 맞추고, 못 맞춘 품번은 <b>확인 필요 목록</b>으로 따로 모읍니다.
+     사유 Lever·업체·월별 실적을 그래프와 엑셀 보고서로 냅니다.</p>
+</div></header>
+
+<main><div class="wrap">
+
+<div class="b-cta"><span><b>v1.1 상세 기획안 방식</b> — 발주 실적 × 협력업체 담당자 × 예산 단가를 매칭해 ZNB 발주의 차이금액·Impact·실적을 계산합니다. 이 화면(연초 단가표 방식)은 그대로 둡니다.</span>
+  <span><a class="btn primary" href="budget.html">예산단가 방식 열기</a> <a class="btn" href="budget.html#example" id="go-budget-sample">예제로 바로 보기</a></span></div>
+
+<section id="s-data" class="card">
+  <h2 style="margin-top:0">1. 엑셀 파일을 올리세요</h2>
+  <p class="sub">표 세 가지 — <code>발주실적</code>(품번·품명·공급업체·발주수량·발주단가·발주월) ·
+     <code>확정단가</code>(품번·확정단가) · <code>품의서</code>(품번·기준단가·변경후단가·사유 Lever·품의번호, 선택).
+     한 파일에 시트로 넣어도 되고, 월별 파일을 여러 개 올려도 됩니다. 머리글을 보고 어느 표인지 알아봅니다.</p>
+  <label class="drop" id="drop">
+    <input type="file" id="file" accept=".xlsx,.xls,.csv" multiple>
+    <b>엑셀 파일을 끌어다 놓거나 눌러서 고르세요 (여러 개 가능)</b>
+    <span>파일은 서버로 올라가지 않습니다 · 브라우저 안에서만 계산합니다</span>
+  </label>
+  <div class="btnrow">
+    <button class="btn primary" id="btn-sample">예제로 해보기</button>
+    <button class="btn" id="btn-template">빈 양식 내려받기</button>
+    <button class="btn" id="btn-sample-file">예제 엑셀 내려받기</button>
+    <button class="btn" id="btn-reset">올린 파일 모두 비우기</button>
+  </div>
+  <div id="data-status"></div>
+</section>
+
+<section id="s-sum" class="card" hidden>
+  <h2 style="margin-top:0">2. 절감 실적 집계</h2>
+  <div class="ctrl">
+    <label>기간 <select id="month"></select></label>
+    <span class="legend"><i class="sw-save"></i>절감 <i class="sw-inc"></i>인상</span>
+  </div>
+  <div id="totals"></div>
+  <div id="narr" class="note"></div>
+  <h3>월별 절감·인상</h3>
+  <div id="chart-month" class="chart"></div>
+  <div class="grid2">
+    <div>
+      <h3>사유 Lever별</h3>
+      <div id="chart-lever" class="chart"></div>
+      <div id="tbl-lever"></div>
+    </div>
+    <div>
+      <h3>업체별</h3>
+      <div id="chart-vendor" class="chart"></div>
+      <div id="tbl-vendor"></div>
+    </div>
+  </div>
+
+  <details class="ai" id="ai-box">
+    <summary>AI 로 보고 문장 다듬기 (선택 · 키가 없어도 위 요약은 그대로 나옵니다)</summary>
+    <div class="form">
+      <label>제공자
+        <select id="ai-provider">
+          <option value="openai">OpenAI (gpt-4o-mini)</option>
+          <option value="anthropic">Anthropic (claude-haiku-5-5)</option>
+        </select></label>
+      <label class="wide2">API 키 <input type="password" id="ai-key" autocomplete="off" placeholder="키는 이 브라우저에만 저장됩니다"></label>
+      <button class="btn" id="ai-save">키 저장</button>
+      <button class="btn primary" id="ai-run">보고 문장 초안 만들기</button>
+    </div>
+    <p class="sub">키는 이 브라우저(localStorage)에만 저장되고 다른 곳으로 보내지 않습니다.
+       AI 에는 월별·Lever별 <b>합계 숫자만</b> 보내고 품번·업체 단가는 보내지 않습니다.</p>
+    <div id="ai-out"></div>
+  </details>
+</section>
+
+<section id="s-check" class="card" hidden>
+  <h2 style="margin-top:0">3. 확인 필요</h2>
+  <p class="sub">기준 단가를 찾지 못한 신규 품번은 실적에 넣지 않고 여기에 모읍니다.
+     품의서 정보를 표로 올리거나 아래에서 직접 입력하면 바로 다시 계산합니다.</p>
+  <div id="checks"></div>
+  <h3>품의서 정보 직접 입력</h3>
+  <div class="form" id="m-form">
+    <label>품번 <input type="text" id="m-part" placeholder="예: BK-1062"></label>
+    <label>기준단가(원) <input type="text" id="m-base" inputmode="decimal" placeholder="품의서상 기준 단가"></label>
+    <label>변경후단가(원) <input type="text" id="m-new" inputmode="decimal" placeholder="선택"></label>
+    <label>사유 Lever <select id="m-lever"></select></label>
+    <label>품의번호 <input type="text" id="m-doc" placeholder="예: PU-2026-0412"></label>
+    <label class="wide">메모 <input type="text" id="m-note" placeholder="예: 업체 변경에 따른 신규 품번"></label>
+    <button class="btn primary" id="m-add">입력 반영</button>
+  </div>
+  <div id="m-msg"></div>
+  <ol id="m-list" class="adj"></ol>
+</section>
+
+<section id="s-detail" class="card" hidden>
+  <h2 style="margin-top:0">4. 발주 줄별 상세</h2>
+  <div class="ctrl">
+    <label>구분 <select id="kind">
+      <option value="">전체</option><option>절감</option><option>인상</option><option>변동 없음</option><option>확인 필요</option>
+    </select></label>
+    <label>품번·품명·업체 <input type="search" id="q" placeholder="찾을 말"></label>
+    <span class="sub" id="detail-count"></span>
+  </div>
+  <p class="sub">기준단가 옆 표시는 값의 출처입니다. <span class="src s-base">연초 단가표</span> <span class="src s-approval">품의서 표</span>는 올린 문서의 값,
+     <span class="src s-manual">화면 입력</span>은 여기서 입력한 값, <span class="calc-t">계산</span>은 도구가 계산한 값입니다.</p>
+  <div class="tablewrap" id="detail"></div>
+  <div class="btnrow">
+    <button class="btn green" id="btn-export">엑셀 보고서 내보내기</button>
+  </div>
+  <p class="sub" style="margin-top:8px">보고서는 기간 선택과 상관없이 전체 기간으로 냅니다(요약·월별·Lever별·업체별·품번별·발주상세·확인필요·품의서정보).</p>
+</section>
+
+</div></main>
+
+<footer><div class="wrap">
+  생성형 AI 업무자동화 전문가과정 2차수 · 프로젝트 08 · 기획 최상원 ·
+  예제 데이터는 실제 사내 데이터가 아닙니다.
+</div></footer>
+
+<script src="lib/xlsx.full.min.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
