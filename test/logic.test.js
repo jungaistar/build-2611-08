@@ -164,10 +164,11 @@ eq(B.detectKind(['자재품번', '예산단가', 'NOTE']), 'budget', '예산 단
 eq(B.detectKind(['이름', '전화']), null, '모르는 표');
 
 // 구매단가 결정·환율
-eq(B.decidePrice({ cat: '0', mat: '1,200', asm: 5 }).price, 1200, '품목범주 0 → 자재비');
-eq(B.decidePrice({ cat: 3, mat: 1200, asm: 5 }).price, 5, '품목범주 3 → 조립비');
+eq(B.decidePrice({ cat: '0', price: '1,200', mat: 7, asm: 5 }).price, 1200, '품목범주 0 → 구매단가 열 그대로(자재비는 쓰지 않는다)');
+eq(B.decidePrice({ cat: 0, origPrice: 300, price: 1, mat: 7, asm: 5 }).price, 300, '행으로 읽은 뒤에는 원본 구매단가(origPrice)');
+eq(B.decidePrice({ cat: 3, price: 99, mat: 1200, asm: 5 }).price, 5, '품목범주 3 → 조립비(구매단가 열과 달라도)');
 eq(B.decidePrice({ cat: 1, mat: 1200, asm: 5 }).price, null, '그 밖 범주는 정하지 않는다');
-eq(B.decidePrice({ cat: 0, mat: '', asm: 5 }).src, 'mat', '자재비 공란이면 보류(어느 칸인지는 남긴다)');
+eq([B.decidePrice({ cat: 0, price: '', mat: 900, asm: 5 }).src, B.decidePrice({ cat: 0, price: '', mat: 900, asm: 5 }).price], ['price', null], '품목범주 0 인데 구매단가가 비면 보류 — 자재비로 채우지 않는다');
 var fx = B.normFx(B.DEFAULT_FX), fxm = {}; fx.list.forEach(function (f) { fxm[f.cur] = f.rate; });
 eq(fx.list.length, 5, '기본 환율 5종');
 eq(B.fxFor('JYP', fxm), { rate: 9.4, status: 'ok' }, 'JYP 는 9.4');
@@ -187,7 +188,7 @@ var hb = B.readByAlias([
   { 자재품번: 'A-3', 예산단가: 100, NOTE: '원자재' }, { 자재품번: 'A-1', 예산단가: 1100, NOTE: '중복' }
 ], 'budget');
 function O(po, type, vcode, part, cur, qty, cat, asm, mat, price) {
-  return { 구매오더: po, 발주유형: type, '협력사 코드': vcode, '협력사 이름': '', 자재품번: part, 자재품명: '품', 통화: cur, 구매단가: price == null ? '' : price, 발주수량: qty, 품목범주: cat, 조립비: asm, 자재비: mat };
+  return { 구매오더: po, 발주유형: type, '협력사 코드': vcode, '협력사 이름': '', 자재품번: part, 자재품명: '품', 통화: cur, 구매단가: price == null ? (cat === 0 ? mat : '') : price, 발주수량: qty, 품목범주: cat, 조립비: asm, 자재비: mat };
 }
 var ho = B.readByAlias([
   O('P1', 'ZNB', '001001', 'A-1', 'KRW', 10, 0, 100, 900, 900),      // 900-1000 = -100 → 인상, -1,000
@@ -219,7 +220,7 @@ eq(R.rows[1].vname, '누리금속', '협력사 이름이 비면 담당자 표의
 eq(R.rows.map(function (r) { return r.diff; }), [-100, 0.3, null, null, null, 0.01, 0, 0, 0.01, 0, -0.5, 0.4], '차이금액 = 구매단가 − 예산단가');
 eq(R.rows.map(function (r) { return r.result; }), ['인상', '인하', '', '', '', '인하', '동결', '동결', '인하', '동결', '인상', '인하'], '실적은 차이금액 부호로(양수 인하 · 음수 인상 · 0 동결)');
 eq(R.rows.map(function (r) { return r.impact; }), [-1000, 1215, null, null, null, null, null, null, 1, 0, -1, 0], 'Impact = 차이금액 × 수량 × 환율, 정수 반올림');
-eq(R.rows[0].price, 900, '품목범주 0 → 자재비가 구매단가');
+eq([R.rows[0].price, R.rows[0].priceSrc], [900, 'price'], '품목범주 0 → 구매단가 열 그대로');
 eq(R.rows[1].price, 10.5, '품목범주 3 → 조립비가 구매단가');
 eq(R.rows.map(function (r) { return r.note; }), ['', '', '예산단가 미매칭 - 수작업 입력 필요', '구매단가 확인 필요', '구매단가 확인 필요', '환율 확인 필요', '환율 확인 필요', '기타 데이터 오류', '', '', '', ''], '비고는 정해진 문구만, 정상은 공란');
 ok(/JYP 와 글자가 비슷/.test(R.rows[5].details[0]), 'JPY 는 확인 대상이라고 상세에 적는다');
@@ -289,7 +290,7 @@ ok(SR.rows.some(function (r) { return r.type === 'znb'; }), '예제의 「znb �
 ok(SR.summary.down > 0 && SR.summary.up > 0 && SR.summary.flat > 0, '예제에 인하·인상·동결');
 eq(SR.verify.filter(function (v) { return !v.ok; }), [], '예제 정합성 검증 전부 일치');
 eq(SR.rows.length + SR.ownerUnmatched.length + SR.excluded.length, SR.summary.total, '예제 행 보존');
-ok(SR.rows.some(function (r) { return r.priceDiffers; }), '예제에 구매단가 열과 적용 단가가 다른 행(자재비 우선)');
+ok(SR.rows.some(function (r) { return r.priceDiffers; }), '예제에 구매단가 열과 적용 단가가 다른 행(품목범주 3 — 조립비 우선)');
 
 
 /* ===================== v1.2 — 품번 느슨한 매칭 · 진단 ===================== */

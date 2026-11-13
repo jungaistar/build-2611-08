@@ -189,7 +189,7 @@
     $('b-count').textContent = rows.length + '행 / ' + state.res.rows.length + '행';
     $('b-table').innerHTML = '<table><thead><tr>' + Budget.COLS.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '<th>원본 위치</th></tr></thead><tbody>' +
       rows.map(function (r) {
-        var pr = r.price == null ? '<span class="bad-t">—</span>' : n0(r.price) + ' <span class="src s-file">' + (r.priceSrc === 'mat' ? '자재비' : '조립비') + '</span>' + (r.priceDiffers ? ' <span class="sub">원본 ' + n0(r.origPrice) + '</span>' : '');
+        var pr = r.price == null ? '<span class="bad-t">—</span>' : n0(r.price) + ' <span class="src s-file">' + (r.priceSrc === 'price' ? '구매단가' : '조립비') + '</span>' + (r.priceDiffers ? ' <span class="sub">원본 ' + n0(r.origPrice) + '</span>' : '');
         var bp = r.bprice != null ? n0(r.bprice) + ' <span class="src ' + (r.bpriceSrc === 'manual' ? 's-manual">화면 입력' : 's-file">예산 파일') + '</span>'
           : '<span class="b-in"><input class="b-manual" data-key="' + esc(r.partKey) + '" data-part="' + esc(r.part) + '" inputmode="decimal" placeholder="예산단가 입력"><button class="btn sm b-manual-add" data-key="' + esc(r.partKey) + '">반영</button></span>';
         return '<tr class="' + (r.notes.length ? 'flag' : r.result === '인상' ? 'inc' : '') + '"><td class="mono">' + esc(r.po) + '</td><td>' + esc(r.type) + '</td><td class="mono">' + esc(r.vcode) + '</td><td>' + esc(r.vname) +
