@@ -165,18 +165,21 @@ window.AUTH_CONFIG = {
       ]
     },
     "landing": {
+      "company": {
+        "name": "HD건설기계",
+        "en": "HD CONSTRUCTION EQUIPMENT",
+        "logo": "images/logo.png",
+        "logoH": 24
+      },
       "slides": [
         {
-          "image": "images/slide-1.jpg"
-        },
-        {
-          "image": "images/slide-2.jpg"
-        },
-        {
-          "image": "images/slide-3.jpg"
+          "image": "images/slide-1.jpg",
+          "tone": "dark"
         }
       ],
-      "heroMode": "slide"
+      "heroMode": "slide",
+      "headline": "구매 절감 성과,\n데이터로 증명하다.",
+      "lead": "복잡한 구매 데이터를 자동으로 연결하고, 절감 실적을 한눈에 분석합니다."
     }
   }
 };
