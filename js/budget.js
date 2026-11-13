@@ -15,7 +15,7 @@
  *   담당자: 협력사 코드 정확 일치(공백·숫자/글자 형식만 맞춤, 선행 0 은 지우지 않음). 미매칭은 실적에서 빼고 「오류 내역」.
  *   예산단가: 자재품번 정확 일치(공백만 맞춤). 미매칭 행은 실적 시트에 남기고 예산단가·차이금액·Impact·실적은 공란.
  *   구매단가: 품목범주 0 → 구매단가 열 그대로, 3 → 조립비(자재비 열은 쓰지 않는다). 그 밖·공란·숫자 아님 → 「구매단가 확인 필요」.
- *   차이금액 = 구매단가 − 예산단가 (양수 인하 · 음수 인상 · 0 동결 — 기획자 정의 그대로).
+ *   차이금액 = 구매단가 − 예산단가 (양수 인상 · 음수 인하 · 0 동결 — 2026-11-13 기획자 「오류 정정」. v1.3 까지는 반대였다).
  *   Impact = 차이금액 × 발주수량 × 환율, 원화 정수 반올림. 환율 없으면 Impact 없음.
  *   Lever = 예산 단가 NOTE 그대로. 비고는 정해진 다섯 가지만, 정상은 공란.
  */
@@ -269,7 +269,7 @@
       }
       // 6) 계산 — 차이금액 = 구매단가 − 예산단가, Impact = 차이금액 × 발주수량 × 환율(정수 반올림)
       r.diff = r.price != null && r.bprice != null ? round6(r.price - r.bprice) : null;
-      r.result = r.diff == null ? '' : r.diff > 0 ? '인하' : r.diff < 0 ? '인상' : '동결';
+      r.result = r.diff == null ? '' : r.diff > 0 ? '인상' : r.diff < 0 ? '인하' : '동결';
       r.impact = r.diff != null && !isNaN(r.qty) && r.fx != null ? roundInt(r.diff * r.qty * r.fx) : null;
       r.note = noteText(r.notes);
       r.notes.forEach(function (n, j) { errors.push(errEntry(n, r, r.details[j], true)); });
@@ -362,7 +362,7 @@
       { name: '담당자 미매칭 행은 실적 시트에 없다', ok: rows.every(function (r) { return r.owner !== UNMATCHED; }), detail: ownerUnmatched.length + '건 제외' },
       { name: '예산단가 미매칭 행은 실적 시트에 남고 Impact 가 비어 있다', ok: rows.filter(function (r) { return r.bprice == null; }).every(function (r) { return r.impact == null && r.diff == null && r.result === ''; }), detail: s.manualNeeded + '건' },
       { name: '전체 Impact 합 = 개별 행 Impact 합 = 담당자별 합', ok: s.impactTotal === sumRows && sumRows === byOwnerSum, detail: s.impactTotal + ' = ' + sumRows + ' = ' + byOwnerSum },
-      { name: '실적 구분은 차이금액 부호를 따른다', ok: rows.every(function (r) { return r.diff == null ? r.result === '' : r.result === (r.diff > 0 ? '인하' : r.diff < 0 ? '인상' : '동결'); }), detail: '인하 ' + s.down + ' · 인상 ' + s.up + ' · 동결 ' + s.flat }
+      { name: '실적 구분은 차이금액 부호를 따른다', ok: rows.every(function (r) { return r.diff == null ? r.result === '' : r.result === (r.diff > 0 ? '인상' : r.diff < 0 ? '인하' : '동결'); }), detail: '인하 ' + s.down + ' · 인상 ' + s.up + ' · 동결 ' + s.flat }
     ];
   }
 
@@ -375,7 +375,7 @@
     return {
       diff: 'IF(OR(' + N + '="",' + H + '=""),"",' + H + '-' + N + ')',
       impact: 'IF(OR(' + O + '="",' + I + '=""),"",IFERROR(ROUND(' + O + '*' + I + '*VLOOKUP(' + G + ',환율!$A$2:$B$100,2,FALSE),0),""))',
-      result: 'IF(' + O + '="","",IF(' + O + '>0,"인하",IF(' + O + '<0,"인상","동결")))'
+      result: 'IF(' + O + '="","",IF(' + O + '>0,"인상",IF(' + O + '<0,"인하","동결")))'
     };
   }
   function rawOr(n, raw) { return isNaN(n) ? str(raw) : n; }
@@ -415,7 +415,7 @@
       ['정합성 검증', '결과', '내용']].concat(res.verify.map(function (v) { return [v.name, v.ok ? '일치' : '불일치', v.detail]; }), [[],
       ['담당자별', '건수', '인하', '인상', '동결', '보류', 'Impact 합계(원)']], res.byOwner.map(function (g) { return [g.label, g.lines, g.down, g.up, g.flat, g.pending, g.impact]; }), [[],
       ['협력사별', '건수', '인하', '인상', '동결', '보류', 'Impact 합계(원)']], res.byVendor.map(function (g) { return [g.label, g.lines, g.down, g.up, g.flat, g.pending, g.impact]; }), [[],
-      ['계산 규칙', '차이금액 = 구매단가 − 예산단가 (양수 인하 · 음수 인상 · 0 동결). Impact = 차이금액 × 발주수량 × 환율, 정수 반올림. 구매단가는 품목범주 0 → 구매단가 열 그대로, 3 → 조립비(자재비는 쓰지 않음).'],
+      ['계산 규칙', '차이금액 = 구매단가 − 예산단가 (양수 인상 · 음수 인하 · 0 동결). Impact = 차이금액 × 발주수량 × 환율, 정수 반올림. 구매단가는 품목범주 0 → 구매단가 열 그대로, 3 → 조립비(자재비는 쓰지 않음).'],
       ['주의', '집계 금액은 상세 실적 시트의 개별 행 Impact 를 더한 값입니다. 시트에서 예산단가를 직접 입력하면 상세는 바로 다시 계산되지만 이 집계 시트의 숫자는 고정값이니 다시 집계해 주세요.']]);
     var ws2 = U.aoa_to_sheet(sum); ws2['!cols'] = [{ wch: 44 }, { wch: 16 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 18 }];
     U.book_append_sheet(wb, ws2, '집계 및 검증');
@@ -440,7 +440,7 @@
     // 6. 안내
     var ws6 = U.aoa_to_sheet([['안내'],
       ['예산단가가 비어 있는 행(비고 「예산단가 미매칭 - 수작업 입력 필요」)은 「구매절감 실적」 시트의 예산단가 칸에 값을 넣으면 차이금액·Impact·실적이 수식으로 바로 계산됩니다.'],
-      ['차이금액 = 구매단가 − 예산단가. 양수 인하, 음수 인상, 0 동결(기획자 정의).'],
+      ['차이금액 = 구매단가 − 예산단가. 양수 인상, 음수 인하, 0 동결(기획자 정의, v1.4 정정).'],
       ['Impact = 차이금액 × 발주수량 × 환율(「환율」 시트에서 통화로 찾음), 원화 정수 반올림. 환율표에 없는 통화는 Impact 가 비어 있습니다 — 「환율」 시트에 통화와 환율을 더하면 계산됩니다.'],
       ['구매단가는 품목범주 0 이면 원본 구매단가 그대로, 3 이면 조립비입니다(자재비 열은 쓰지 않습니다). 그 밖의 범주이거나 값이 없으면 구매단가가 비어 있고 비고에 「구매단가 확인 필요」가 있습니다. 구매단가 칸에 값을 넣어도 수식이 계산됩니다.'],
       ['담당자 미매칭 행은 「구매절감 실적」 시트에 없고 「오류 내역」 시트에만 있습니다. 발주유형이 ZNB 가 아닌 행은 「제외(비ZNB)」 시트에 있습니다.'],

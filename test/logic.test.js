@@ -218,7 +218,7 @@ eq(R.rows.map(function (r) { return r.po; }), ['P1', 'P2', 'P4', 'P5', 'P6', 'P7
 eq(R.rows[1].owner, '이서연', '숫자로 읽힌 코드 1002 도 담당자를 찾는다');
 eq(R.rows[1].vname, '누리금속', '협력사 이름이 비면 담당자 표의 이름을 쓴다');
 eq(R.rows.map(function (r) { return r.diff; }), [-100, 0.3, null, null, null, 0.01, 0, 0, 0.01, 0, -0.5, 0.4], '차이금액 = 구매단가 − 예산단가');
-eq(R.rows.map(function (r) { return r.result; }), ['인상', '인하', '', '', '', '인하', '동결', '동결', '인하', '동결', '인상', '인하'], '실적은 차이금액 부호로(양수 인하 · 음수 인상 · 0 동결)');
+eq(R.rows.map(function (r) { return r.result; }), ['인하', '인상', '', '', '', '인상', '동결', '동결', '인상', '동결', '인하', '인상'], '실적은 차이금액 부호로(v1.4: 양수 인상 · 음수 인하 · 0 동결)');
 eq(R.rows.map(function (r) { return r.impact; }), [-1000, 1215, null, null, null, null, null, null, 1, 0, -1, 0], 'Impact = 차이금액 × 수량 × 환율, 정수 반올림');
 eq([R.rows[0].price, R.rows[0].priceSrc], [900, 'price'], '품목범주 0 → 구매단가 열 그대로');
 eq(R.rows[1].price, 10.5, '품목범주 3 → 조립비가 구매단가');
@@ -226,8 +226,8 @@ eq(R.rows.map(function (r) { return r.note; }), ['', '', '예산단가 미매칭
 ok(/JYP 와 글자가 비슷/.test(R.rows[5].details[0]), 'JPY 는 확인 대상이라고 상세에 적는다');
 eq(R.rows.map(function (r) { return r.lever; }), ['VA/VE', '', '', 'VA/VE', 'VA/VE', '원자재', '원자재', 'VA/VE', '원자재', 'VA/VE', 'VA/VE', 'VA/VE'], 'Lever = 예산 단가 NOTE 그대로');
 var S1 = R.summary;
-eq([S1.down, S1.up, S1.flat], [4, 2, 3], '인하 4 · 인상 2 · 동결 3');
-eq([S1.downImpact, S1.upImpact, S1.impactTotal], [1216, -1001, 215], 'Impact 합계');
+eq([S1.down, S1.up, S1.flat], [2, 4, 3], '인하 2 · 인상 4 · 동결 3');
+eq([S1.downImpact, S1.upImpact, S1.impactTotal], [-1001, 1216, 215], 'Impact 합계(인하 · 인상 · 전체)');
 eq([S1.budgetMatched, S1.budgetUnmatched, S1.manualNeeded], [11, 1, 1], '예산단가 매칭 11 · 미매칭 1');
 eq([S1.priceCheck, S1.fxCheck, S1.otherErr, S1.noImpact], [2, 2, 1, 6], '구매단가 확인 2 · 환율 확인 2 · 기타 1 · Impact 없음 6');
 eq(R.verify.map(function (v) { return v.ok; }), [true, true, true, true, true, true], '정합성 검증 6항목 일치');
@@ -242,7 +242,7 @@ eq(B.groupBy(R.rows, 'vendor')[0].label, '누리금속 (1002)', '협력사별 �
 var manual = { 'N-9': { part: 'N-9', price: '400' }, 'A-1': { part: 'A-1', price: 5 } };
 var snap = JSON.stringify(manual);
 var R2 = B.run({ orders: ho, vendors: hv, budget: hb }, { manual: manual });
-eq([R2.rows[2].bprice, R2.rows[2].bpriceSrc, R2.rows[2].diff, R2.rows[2].result, R2.rows[2].impact, R2.rows[2].note], [400, 'manual', 100, '인하', 500, ''], '화면 입력 예산단가로 계산 (500-400)×5');
+eq([R2.rows[2].bprice, R2.rows[2].bpriceSrc, R2.rows[2].diff, R2.rows[2].result, R2.rows[2].impact, R2.rows[2].note], [400, 'manual', 100, '인상', 500, ''], '화면 입력 예산단가로 계산 (500-400)×5');
 eq(R2.rows[0].bprice, 1000, '파일에 있는 품번은 화면 입력으로 덮지 않는다');
 eq([R2.summary.manualFilled, R2.summary.manualNeeded, R2.summary.budgetUnmatched], [1, 0, 1], '수작업 입력으로 채운 1 · 남은 0');
 eq(JSON.stringify(manual), snap, '재처리가 화면 입력값을 지우거나 바꾸지 않는다');
